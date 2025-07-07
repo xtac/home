@@ -50,14 +50,11 @@ blueprint:
     input_number_boost_threshold:
       name: 부스트 모드 진입 기준 온도 (°C)
       description: 현재 온도가 이 값보다 높으면 부스트 모드가 작동합니다.
-      default: 24
       selector:
-        number:
-          min: 20.0
-          max: 30.0
-          unit_of_measurement: °C
-          mode: slider
-          step: 1.0
+        entity:
+          domain:
+          - input_number
+          multiple: false
     boost_aircon_fan_mode:
       name: 부스트모드 팬설정
       description: 에어컨마다 지원하는 값이 다르므로 에어컨의 fan_modes 속성을 참고하여 입력합니다. (auto, low, medium,
