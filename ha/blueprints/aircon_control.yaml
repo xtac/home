@@ -2,8 +2,7 @@ blueprint:
   name: 통합 에어컨 자동화 (부스트·일반·제습·종료)
   description: '이 블루프린트는 가상 스위치와 실내 온·습도 센서, 그리고 목표 불쾌지수를 기반으로 에어컨을 자동 제어합니다. 부스트
     모드, 일반 냉방, 제습 병행 모드, 종료 모드를 하나로 통합하여, 사용자의 환경과 설정값에 따라 최적의 냉방 모드를 자동으로 선택하고 전환합니다
-    origin (https://github.com/Ysyou010/ysyou0109/blob/main/blueprints/automation/ysyou0109/aircon_control.yaml)
-    '
+    origin (https://github.com/Ysyou010/ysyou0109/blob/main/blueprints/automation/ysyou0109/aircon_control.yaml) '
   domain: automation
   input:
     climate_entity:
@@ -104,14 +103,11 @@ blueprint:
     input_number_general_temperature:
       name: 일반냉방 모드 설정 온도 (°C)
       description: 일반 냉방 모드에서 사용할 설정 온도입니다.
-      default: 23
       selector:
-        number:
-          min: 20.0
-          max: 25.0
-          unit_of_measurement: °C
-          mode: slider
-          step: 1.0
+        entity:
+          domain:
+          - input_number
+          multiple: false
     input_number_now_discomfort:
       name: 현재 불쾌지수
       description: 현재 불쾌지수를 나타내는 템플릿 센서입니다.(DI)
