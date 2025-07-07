@@ -236,6 +236,8 @@ trigger:
   - !input input_number_now_discomfort
   - !input input_number_target_discomfort
   - !input input_number_dehumid_threshold
+  - !input input_number_general_temperature
+  - !input input_number_boost_threshold
 - platform: state
   id: index_on
   entity_id:
