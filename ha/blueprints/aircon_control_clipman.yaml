@@ -33,18 +33,6 @@ blueprint:
         entity:
           domain: sensor
           device_class: humidity
-    sensor_door:
-      name: 도어센서
-      description: 문이 잠깐 열려 있으면 에어컨을 송풍으로, 오래 열려 있으면 에어컨을 끄고 자동화를 종료합니다.
-      selector:
-        entity:
-          domain: binary_sensor
-    sensor_window:
-      name: 창문센서
-      description: 창문을 열면 에어컨을 끄고 자동화를 종료합니다.
-      selector:
-        entity:
-          domain: binary_sensor
     input_number_target_discomfort_Index:
       name: 목표 불쾌지수
       description: input_number (20~30, 0.1), 목표 불쾌지수를 설정하며 외부에서 변경이 가능합니다.
@@ -95,7 +83,7 @@ blueprint:
       selector:
         number:
           min: 20
-          max: 25
+          max: 30
           step: 1
           unit_of_measurement: "°C"
     target_aircon_humidity:
@@ -116,24 +104,6 @@ blueprint:
       selector:
         entity:
           domain: input_boolean
-    idle_time:
-      name: 문이 잠깐 열리는 시간
-      description: 설정한 시간보다 오랫동안 문이 열려있으면 에어컨을 송풍으로 변경합니다.
-      default:
-        hours: 0
-        minutes: 0
-        seconds: 30
-      selector:
-        duration:
-    off_time:
-      name: 문이 오래 열리는 시간
-      description: 설정한 시간보다 오랫동안 문이 열려있으면 에어컨을 끄고 자동화를 종료합니다.
-      default:
-        hours: 0
-        minutes: 2
-        seconds: 0
-      selector:
-        duration:
 variables:
   climate_aircon: !input climate_aircon
   sensor_temperature: !input sensor_temperature
@@ -167,28 +137,6 @@ trigger:
     id: 에어컨OFF
     entity_id: !input climate_aircon
     to: 'off'
-  - platform: state
-    id: 문닫힘
-    entity_id: !input sensor_door
-    from: 'on'
-    to: 'off'
-  - platform: state
-    id: 문열림
-    entity_id: !input sensor_door
-    from: 'off'
-    to: 'on'
-    for: !input idle_time
-  - platform: state
-    id: 오랫동안문열림
-    entity_id: !input sensor_door
-    from: 'off'
-    to: 'on'
-    for: !input off_time
-  - platform: state
-    id: 창문열림
-    entity_id: !input sensor_window
-    from: 'off'
-    to: 'on'
 condition: []
 action:
   - choose:
@@ -200,9 +148,6 @@ action:
             state: 'on'
           - condition: template
             value_template: '{{ trigger.from_state.state != trigger.to_state.state }}'
-          - condition: state
-            entity_id: !input sensor_door
-            state: 'off'
         sequence:
           - if:
               - condition: template
