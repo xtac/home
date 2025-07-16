@@ -1,13 +1,7 @@
-#에어컨 제어(날자, clipman@naver.com)
-#version: 2023-07-01 문이 열린 후 온/습도변경시 버그수정
-#veraion: 2022-07-28 문열림시 버그수정
-#veraion: 2022-07-16 제습모드후 송풍모드시 팬속도 변경
-#version: 2022-07-13 최초공개
 blueprint:
   name: 에어컨 제어(날자)
-  description: 외부 온도/습도 센서로 계산된 불쾌지수를 기준으로 에어컨을 제어합니다.
-    습도가 높으면 냉방모드와 제습모드를 번갈아서 동작하도록 합니다.
-    출입문과 창문의 열림을 에어컨 제어에 활용합니다.
+  description: 외부 온도/습도 센서로 계산된 불쾌지수를 기준으로 에어컨을 제어합니다. 습도가 높으면 냉방모드와 제습모드를 번갈아서 동작하도록
+    합니다. 출입문과 창문의 열림을 에어컨 제어에 활용합니다.
   domain: automation
   input:
     input_boolean_aircon:
@@ -15,39 +9,52 @@ blueprint:
       description: input_boolean, 에어컨을 켜고 끄는데 사용하는 가상 에어컨입니다.
       selector:
         entity:
-          domain: input_boolean
+          domain:
+          - input_boolean
+          multiple: false
     climate_aircon:
       name: 에어컨
       selector:
         entity:
-          domain: climate
+          domain:
+          - climate
+          multiple: false
     sensor_temperature:
       name: 온도센서
       selector:
         entity:
-          domain: sensor
-          device_class: temperature
+          domain:
+          - sensor
+          device_class:
+          - temperature
+          multiple: false
     sensor_humidity:
       name: 습도센서
       selector:
         entity:
-          domain: sensor
-          device_class: humidity
+          domain:
+          - sensor
+          device_class:
+          - humidity
+          multiple: false
     input_number_target_discomfort_Index:
       name: 목표 불쾌지수
       description: input_number (20~30, 0.1), 목표 불쾌지수를 설정하며 외부에서 변경이 가능합니다.
       selector:
         entity:
-          domain: input_number
+          domain:
+          - input_number
+          multiple: false
     index_offset:
       name: 불쾌지수 공차
       description: 목표 불쾌지수가 25.0, 공차 0.1이면 24.9~25.1 유지하며, 범위를 벗어나면 에어컨 모드를 변경합니다.
       default: 0.1
       selector:
         number:
-          min: 0
-          max: 1
+          min: 0.0
+          max: 1.0
           step: 0.1
+          mode: slider
     target_aircon_cool_mode:
       name: 에어컨 냉방모드
       description: 에어컨 냉방모드로 가동시 동작할 에어컨 모드를 선택합니다.
@@ -55,9 +62,10 @@ blueprint:
       selector:
         select:
           options:
-            - "cool"
-            #- "dry"
-            #- "fan_only"
+          - cool
+          multiple: false
+          sort: false
+          custom_value: false
     target_aircon_fanonly_mode:
       name: 에어컨 송풍모드
       description: 에어컨 송풍모드로 가동시 동작할 에어컨 모드를 선택합니다.
@@ -65,39 +73,47 @@ blueprint:
       selector:
         select:
           options:
-            #- "cool"
-            #- "dry"
-            - "fan_only"
+          - fan_only
+          multiple: false
+          sort: false
+          custom_value: false
     target_aircon_fan_mode:
       name: 에어컨 팬모드
-      description: 에어컨마다 지원하는 값이 다르므로 에어컨의 fan_modes 속성을 참고하여 입력합니다.
-        (auto, low, medium, high, turbo, middle, ...)
+      description: 에어컨마다 지원하는 값이 다르므로 에어컨의 fan_modes 속성을 참고하여 입력합니다. (auto, low, medium,
+        high, turbo, middle, ...)
       default: auto
       selector:
-        text:
+        text: {}
     target_aircon_temperature:
       name: 에어컨 냉방설정 온도
-      description: 에어컨 동작시 에어컨에 설정하는 온도입니다.
-        에어컨 팬모드가 자동일 경우에도 이 값이 영향을 미치므로 적당한 값을 입력합니다.
+      description: 에어컨 동작시 에어컨에 설정하는 온도입니다. 에어컨 팬모드가 자동일 경우에도 이 값이 영향을 미치므로 적당한 값을
+        입력합니다.
       default: 23
       selector:
         entity:
-          domain: input_number
+          domain:
+          - input_number
+          multiple: false
     target_aircon_humidity:
       name: 제습모드를 병행할 습도
-      description: 여기에 설정한 습도보다 높으면 에어컨 동작시 냉방(cool)과 제습(dry)을 번갈아서 동작합니다.
-        일반모드 = 냉방->송풍->냉방->송풍, 병행모드 = 냉방->송풍->제습->송풍->냉방->송풍->제습->송풍
+      description: 여기에 설정한 습도보다 높으면 에어컨 동작시 냉방(cool)과 제습(dry)을 번갈아서 동작합니다. 일반모드 =
+        냉방->송풍->냉방->송풍, 병행모드 = 냉방->송풍->제습->송풍->냉방->송풍->제습->송풍
       default: 65
       selector:
         entity:
-          domain: input_number
+          domain:
+          - input_number
+          multiple: false
     input_boolean_toggle_cool_dry:
       name: 제습병행모드를 제어할 가상 스위치
-      description: input_boolean, 제습병행모드를 제어하는데 필요한 가상 스위치입니다.
-        이 값은 자동화 내부에서 사용되고 자동으로 바뀌며 사용자가 설정하지 않습니다.
+      description: input_boolean, 제습병행모드를 제어하는데 필요한 가상 스위치입니다. 이 값은 자동화 내부에서 사용되고
+        자동으로 바뀌며 사용자가 설정하지 않습니다.
       selector:
         entity:
-          domain: input_boolean
+          domain:
+          - input_boolean
+          multiple: false
+  source_url: https://github.com/xtac/home/blob/main/ha/blueprints/aircon_control_clipman.yaml
 variables:
   climate_aircon: !input climate_aircon
   sensor_temperature: !input sensor_temperature
@@ -111,222 +127,166 @@ variables:
   target_aircon_humidity: !input target_aircon_humidity
   input_boolean_toggle_cool_dry: !input input_boolean_toggle_cool_dry
 trigger:
-  - platform: state
-    id: 온도습도목표변경
-    entity_id:
-      - !input sensor_temperature
-      - !input sensor_humidity
-      - !input input_number_target_discomfort_Index
-      - !input target_aircon_temperature
-      - !input target_aircon_humidity
-  - platform: state
-    id: 스위치ON
-    entity_id: !input input_boolean_aircon
-    from: 'off'
-    to: 'on'
-  - platform: state
-    id: 스위치OFF
-    entity_id: !input input_boolean_aircon
-    from: 'on'
-    to: 'off'
-  - platform: state
-    id: 에어컨OFF
-    entity_id: !input climate_aircon
-    to: 'off'
+- platform: state
+  id: 온도습도목표변경
+  entity_id:
+  - !input sensor_temperature
+  - !input sensor_humidity
+  - !input input_number_target_discomfort_Index
+  - !input target_aircon_temperature
+  - !input target_aircon_humidity
+- platform: state
+  id: 스위치ON
+  entity_id: !input input_boolean_aircon
+  from: 'off'
+  to: 'on'
+- platform: state
+  id: 스위치OFF
+  entity_id: !input input_boolean_aircon
+  from: 'on'
+  to: 'off'
+- platform: state
+  id: 에어컨OFF
+  entity_id: !input climate_aircon
+  to: 'off'
 condition: []
 action:
-  - choose:
-      - conditions:
-          - condition: trigger
-            id: 온도습도목표변경
-          - condition: state
-            entity_id: !input input_boolean_aircon
-            state: 'on'
+- choose:
+  - conditions:
+    - condition: trigger
+      id: 온도습도목표변경
+    - condition: state
+      entity_id: !input input_boolean_aircon
+      state: 'on'
+    - condition: template
+      value_template: '{{ trigger.from_state.state != trigger.to_state.state }}'
+    sequence:
+    - if:
+      - condition: template
+        value_template: '{{ (states(sensor_temperature)|float(default=0)-0.55*(1-states(sensor_humidity)|float(default=0)/100)*(states(sensor_temperature)|float(default=0)-14.5))|round(1)
+          > (states(input_number_target_discomfort_Index)|float(default=0) + index_offset|float(default=0))
+          }}'
+      - condition: not
+        conditions:
+        - condition: template
+          value_template: '{{ is_state(climate_aircon, iif((states(sensor_humidity)|float(default=0)
+            > target_aircon_humidity|float(default=0)) and states(input_boolean_toggle_cool_dry)|bool,
+            "dry", target_aircon_cool_mode)) }}'
+      then:
+      - service: climate.set_hvac_mode
+        data:
+          hvac_mode: '{{ iif((states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0))
+            and states(input_boolean_toggle_cool_dry)|bool, "dry", target_aircon_cool_mode)
+            }}'
+        target:
+          entity_id: !input climate_aircon
+      else:
+      - if:
+        - condition: template
+          value_template: '{{ (states(sensor_temperature)|float(default=0)-0.55*(1-states(sensor_humidity)|float(default=0)/100)*(states(sensor_temperature)|float(default=0)-14.5))|round(1)
+            < (states(input_number_target_discomfort_Index)|float(default=0) - index_offset|float(default=0))
+            }}'
+        - condition: not
+          conditions:
           - condition: template
-            value_template: '{{ trigger.from_state.state != trigger.to_state.state }}'
-        sequence:
-          - if:
-              - condition: template
-                value_template: '{{ (states(sensor_temperature)|float(default=0)-0.55*(1-states(sensor_humidity)|float(default=0)/100)*(states(sensor_temperature)|float(default=0)-14.5))|round(1) > (states(input_number_target_discomfort_Index)|float(default=0) + index_offset|float(default=0)) }}'
-              - condition: not
-                conditions:
-                  - condition: template
-                    #value_template: '{{ is_state(climate_aircon, target_aircon_cool_mode) }}'
-                    value_template: '{{ is_state(climate_aircon, iif((states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0)) and states(input_boolean_toggle_cool_dry)|bool, "dry", target_aircon_cool_mode)) }}'
-            then:
-              - service: climate.set_hvac_mode
-                data:
-                  #hvac_mode: '{{ target_aircon_cool_mode }}'
-                  hvac_mode: '{{ iif((states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0)) and states(input_boolean_toggle_cool_dry)|bool, "dry", target_aircon_cool_mode) }}'
-                target:
-                  entity_id: !input climate_aircon
-            else:
-              - if:
-                  - condition: template
-                    value_template: '{{ (states(sensor_temperature)|float(default=0)-0.55*(1-states(sensor_humidity)|float(default=0)/100)*(states(sensor_temperature)|float(default=0)-14.5))|round(1) < (states(input_number_target_discomfort_Index)|float(default=0) - index_offset|float(default=0)) }}'
-                  - condition: not
-                    conditions:
-                      - condition: template
-                        value_template: '{{ is_state(climate_aircon, target_aircon_fanonly_mode) }}'
-                then:
-                  - service: climate.set_hvac_mode
-                    data:
-                      hvac_mode: '{{ target_aircon_fanonly_mode }}'
-                    target:
-                      entity_id: !input climate_aircon
-                  - if:
-                      - condition: template
-                        value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0) }}'
-                    then:
-                      - service: input_boolean.toggle
-                        target:
-                          entity_id: !input input_boolean_toggle_cool_dry
-              - if:
-                  - condition: not
-                    conditions:
-                      - condition: template
-                        value_template: '{{ is_state_attr(climate_aircon, "fan_mode", target_aircon_fan_mode) }}'
-                then:
-                  - service: climate.set_fan_mode
-                    data:
-                      fan_mode: '{{ target_aircon_fan_mode }}'
-                    target:
-                      entity_id: !input climate_aircon
-      - conditions:
-          - condition: trigger
-            id: 스위치ON
-          - condition: state
+            value_template: '{{ is_state(climate_aircon, target_aircon_fanonly_mode)
+              }}'
+        then:
+        - service: climate.set_hvac_mode
+          data:
+            hvac_mode: '{{ target_aircon_fanonly_mode }}'
+          target:
             entity_id: !input climate_aircon
-            state: 'off'
-        sequence:
-          - service: climate.turn_on
+        - if:
+          - condition: template
+            value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0)
+              }}'
+          then:
+          - service: input_boolean.toggle
             target:
-              entity_id: !input climate_aircon
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 0
-          - service: climate.set_hvac_mode
-            data:
-              hvac_mode: '{{ target_aircon_cool_mode }}'
-            target:
-              entity_id: !input climate_aircon
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 0
-          - service: climate.set_temperature
-            data:
-              temperature: '{{ target_aircon_temperature }}'
-            target:
-              entity_id: !input climate_aircon
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 0
-          - service: climate.set_fan_mode
-            data:
-              fan_mode: '{{ target_aircon_fan_mode }}'
-            target:
-              entity_id: !input climate_aircon
-          - if:
-              - condition: template
-                value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0) }}'
-            then:
-              - service: input_boolean.turn_off
-                target:
-                  entity_id: !input input_boolean_toggle_cool_dry
-      - conditions:
-          - condition: trigger
-            id: 스위치OFF
-          - condition: not
-            conditions:
-              - condition: state
-                entity_id: !input climate_aircon
-                state: 'off'
-        sequence:
-          - service: climate.turn_off
-            target:
-              entity_id: !input climate_aircon
-            data: {}
-      - conditions:
-          - condition: trigger
-            id: 에어컨OFF
-          - condition: state
-            entity_id: !input input_boolean_aircon
-            state: 'on'
-        sequence:
-          - service: input_boolean.turn_off
-            target:
-              entity_id: !input input_boolean_aircon
-            data: {}
-      - conditions:
-          - condition: trigger
-            id: 문닫힘
-          - condition: state
-            entity_id: !input input_boolean_aircon
-            state: 'on'
-          - condition: not
-            conditions:
-              - condition: template
-                value_template: '{{ is_state(climate_aircon, target_aircon_cool_mode) }}'
-        sequence:
-          - service: climate.set_hvac_mode
-            data:
-              hvac_mode: '{{ target_aircon_cool_mode }}'
-            target:
-              entity_id: !input climate_aircon
-      - conditions:
-          - condition: trigger
-            id: 문열림
-          - condition: state
-            entity_id: !input input_boolean_aircon
-            state: 'on'
-          - condition: not
-            conditions:
-              - condition: template
-                value_template: '{{ is_state(climate_aircon, target_aircon_fanonly_mode) }}'
-        sequence:
-          - service: climate.set_hvac_mode
-            data:
-              hvac_mode: '{{ target_aircon_fanonly_mode }}'
-            target:
-              entity_id: !input climate_aircon
-      - conditions:
-          - condition: trigger
-            id: 오랫동안문열림
-          - condition: not
-            conditions:
-              - condition: state
-                entity_id: !input climate_aircon
-                state: 'off'
-        sequence:
-          - service: climate.turn_off
-            target:
-              entity_id: !input climate_aircon
-            data: {}
-          - service: input_boolean.turn_off
-            target:
-              entity_id: !input input_boolean_aircon
-            data: {}
-      - conditions:
-          - condition: trigger
-            id: 창문열림
-          - condition: not
-            conditions:
-              - condition: state
-                entity_id: !input climate_aircon
-                state: 'off'
-        sequence:
-          - service: climate.turn_off
-            target:
-              entity_id: !input climate_aircon
-            data: {}
-          - service: input_boolean.turn_off
-            target:
-              entity_id: !input input_boolean_aircon
-            data: {}
+              entity_id: !input input_boolean_toggle_cool_dry
+      - if:
+        - condition: not
+          conditions:
+          - condition: template
+            value_template: '{{ is_state_attr(climate_aircon, "fan_mode", target_aircon_fan_mode)
+              }}'
+        then:
+        - service: climate.set_fan_mode
+          data:
+            fan_mode: '{{ target_aircon_fan_mode }}'
+          target:
+            entity_id: !input climate_aircon
+  - conditions:
+    - condition: trigger
+      id: 스위치ON
+    - condition: state
+      entity_id: !input climate_aircon
+      state: 'off'
+    sequence:
+    - service: climate.turn_on
+      target:
+        entity_id: !input climate_aircon
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 1
+        milliseconds: 0
+    - service: climate.set_hvac_mode
+      data:
+        hvac_mode: '{{ target_aircon_cool_mode }}'
+      target:
+        entity_id: !input climate_aircon
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 1
+        milliseconds: 0
+    - service: climate.set_temperature
+      data:
+        temperature: '{{ target_aircon_temperature }}'
+      target:
+        entity_id: !input climate_aircon
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 1
+        milliseconds: 0
+    - service: climate.set_fan_mode
+      data:
+        fan_mode: '{{ target_aircon_fan_mode }}'
+      target:
+        entity_id: !input climate_aircon
+    - if:
+      - condition: template
+        value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0)
+          }}'
+      then:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: !input input_boolean_toggle_cool_dry
+  - conditions:
+    - condition: trigger
+      id: 스위치OFF
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: !input climate_aircon
+        state: 'off'
+    sequence:
+    - service: climate.turn_off
+      target:
+        entity_id: !input climate_aircon
+      data: {}
+  - conditions:
+    - condition: trigger
+      id: 에어컨OFF
+    - condition: state
+      entity_id: !input input_boolean_aircon
+      state: 'on'
+    sequence:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: !input input_boolean_aircon
+      data: {}
 mode: queued
