@@ -81,22 +81,16 @@ blueprint:
         에어컨 팬모드가 자동일 경우에도 이 값이 영향을 미치므로 적당한 값을 입력합니다.
       default: 23
       selector:
-        number:
-          min: 20
-          max: 30
-          step: 1
-          unit_of_measurement: "°C"
+        entity:
+          domain: input_number
     target_aircon_humidity:
       name: 제습모드를 병행할 습도
       description: 여기에 설정한 습도보다 높으면 에어컨 동작시 냉방(cool)과 제습(dry)을 번갈아서 동작합니다.
         일반모드 = 냉방->송풍->냉방->송풍, 병행모드 = 냉방->송풍->제습->송풍->냉방->송풍->제습->송풍
       default: 65
       selector:
-        number:
-          min: 50
-          max: 100
-          step: 1
-          unit_of_measurement: "%"
+        entity:
+          domain: input_number
     input_boolean_toggle_cool_dry:
       name: 제습병행모드를 제어할 가상 스위치
       description: input_boolean, 제습병행모드를 제어하는데 필요한 가상 스위치입니다.
@@ -123,6 +117,8 @@ trigger:
       - !input sensor_temperature
       - !input sensor_humidity
       - !input input_number_target_discomfort_Index
+      - !input target_aircon_temperature
+      - !input target_aircon_humidity
   - platform: state
     id: 스위치ON
     entity_id: !input input_boolean_aircon
