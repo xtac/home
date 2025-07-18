@@ -83,7 +83,9 @@ blueprint:
         high, turbo, middle, ...)
       default: auto
       selector:
-        text: {}
+        text:
+          multiple: false
+          multiline: false
     target_aircon_temperature:
       name: 에어컨 냉방설정 온도
       description: 에어컨 동작시 에어컨에 설정하는 온도입니다. 에어컨 팬모드가 자동일 경우에도 이 값이 영향을 미치므로 적당한 값을
@@ -163,7 +165,7 @@ action:
     sequence:
     - if:
       - condition: template
-        value_template: '{{ (states(sensor_temperature)|float(default=0)-0.55*(1-states(sensor_humidity)|float(default=0)/100)*(states(sensor_temperature)|float(default=0)-14.5))|round(1)
+        value_template: '{{ (states(sensor_temperature) | float(0) - (0.55 - 0.0055 * (states(sensor_humidity) | float(0))) * (states(sensor_temperature) | float(0) - 14.5)) | round(1)
           > (states(input_number_target_discomfort_Index)|float(default=0) + index_offset|float(default=0))
           }}'
       - condition: not
@@ -183,7 +185,7 @@ action:
       else:
       - if:
         - condition: template
-          value_template: '{{ (states(sensor_temperature)|float(default=0)-0.55*(1-states(sensor_humidity)|float(default=0)/100)*(states(sensor_temperature)|float(default=0)-14.5))|round(1)
+          value_template: '{{ (states(sensor_temperature) | float(0) - (0.55 - 0.0055 * (states(sensor_humidity) | float(0))) * (states(sensor_temperature) | float(0) - 14.5)) | round(1)
             < (states(input_number_target_discomfort_Index)|float(default=0) - index_offset|float(default=0))
             }}'
         - condition: not
