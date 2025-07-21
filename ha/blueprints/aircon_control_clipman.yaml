@@ -165,9 +165,10 @@ action:
     sequence:
     - if:
       - condition: template
-        value_template: '{{ (states(sensor_temperature) | float(0) - (0.55 - 0.0055 * (states(sensor_humidity) | float(0))) * (states(sensor_temperature) | float(0) - 14.5)) | round(1)
-          > (states(input_number_target_discomfort_Index)|float(default=0) + index_offset|float(default=0))
-          }}'
+        value_template: '{{ (states(sensor_temperature) | float(0) - (0.55 - 0.0055
+          * (states(sensor_humidity) | float(0))) * (states(sensor_temperature) |
+          float(0) - 14.5)) | round(1) > (states(input_number_target_discomfort_Index)|float(default=0)
+          + index_offset|float(default=0)) }}'
       - condition: not
         conditions:
         - condition: template
@@ -177,22 +178,31 @@ action:
       then:
       - service: climate.set_hvac_mode
         data:
-          hvac_mode: '{{ iif((states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0))
-            and states(input_boolean_toggle_cool_dry)|bool, "dry", target_aircon_cool_mode)
-            }}'
+          hvac_mode: >
+            {% set temp = states(sensor_temperature) | float(default=0) %}
+            {% set target_temp = states(target_aircon_temperature) | float(default=0) %}
+            {% set humidity = states(sensor_humidity) | float(default=0) %}
+            {% if temp <= target_temp %}
+              dry
+            {% else %}
+              {{ iif((humidity > target_aircon_humidity|float(default=0)) and states(input_boolean_toggle_cool_dry)|bool, "dry", target_aircon_cool_mode) }}
+            {% endif %}
+          # hvac_mode: '{{ iif((states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0))
+          #   and states(input_boolean_toggle_cool_dry)|bool, "dry", target_aircon_cool_mode)
+          #   }}'
         target:
           entity_id: !input climate_aircon
       else:
       - if:
         - condition: template
-          value_template: '{{ (states(sensor_temperature) | float(0) - (0.55 - 0.0055 * (states(sensor_humidity) | float(0))) * (states(sensor_temperature) | float(0) - 14.5)) | round(1)
-            < (states(input_number_target_discomfort_Index)|float(default=0) - index_offset|float(default=0))
-            }}'
+          value_template: '{{ (states(sensor_temperature) | float(0) - (0.55 - 0.0055
+            * (states(sensor_humidity) | float(0))) * (states(sensor_temperature)
+            | float(0) - 14.5)) | round(1) < (states(input_number_target_discomfort_Index)|float(default=0)
+            - index_offset|float(default=0)) }}'
         - condition: not
           conditions:
           - condition: template
-            value_template: '{{ is_state(climate_aircon, target_aircon_fanonly_mode)
-              }}'
+            value_template: '{{ is_state(climate_aircon, target_aircon_fanonly_mode) }}'
         then:
         - service: climate.set_hvac_mode
           data:
@@ -201,8 +211,7 @@ action:
             entity_id: !input climate_aircon
         - if:
           - condition: template
-            value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0)
-              }}'
+            value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0) }}'
           then:
           - service: input_boolean.toggle
             target:
@@ -211,8 +220,7 @@ action:
         - condition: not
           conditions:
           - condition: template
-            value_template: '{{ is_state_attr(climate_aircon, "fan_mode", target_aircon_fan_mode)
-              }}'
+            value_template: '{{ is_state_attr(climate_aircon, "fan_mode", target_aircon_fan_mode) }}'
         then:
         - service: climate.set_fan_mode
           data:
@@ -261,8 +269,7 @@ action:
         entity_id: !input climate_aircon
     - if:
       - condition: template
-        value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0)
-          }}'
+        value_template: '{{ states(sensor_humidity)|float(default=0) > target_aircon_humidity|float(default=0) }}'
       then:
       - service: input_boolean.turn_off
         target:
